@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NIITS Random Questions</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: #f7f7f7;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .logo-container {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .logo-container img {
+      width: 150px;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 3px solid #ccc;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 8px;
+      font-size: 16px;
+      margin-top: 5px;
+      box-sizing: border-box;
+    }
+    button {
+      margin-top: 20px;
+      background: #007BFF;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    .questions {
+      margin-top: 20px;
+      padding: 15px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      background: #fafafa;
+    }
+    .error {
+      color: red;
+      margin-top: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Logo Placeholder -->
+    <div class="logo-container">
+      <!-- Replace the src with your actual logo if available -->
+      <img src="image.jpg" alt="Logo" />
+    </div>
+
+    <h1 style="text-align:center;">NIITS Random Questions</h1>
+
+    <form id="questionForm">
+      <label for="name">Name:</label>
+      <input type="text" id="name" required placeholder="Enter your name" />
+
+      <label for="roll">Roll Number:</label>
+      <input type="text" id="roll" required placeholder="Enter your correct roll number" />
+      <div id="rollError" class="error" style="display:none;"></div>
+
+      <label for="roleSelect">Select Your Role:</label>
+      <select id="roleSelect" required>
+        <option value="">--Select Role--</option>
+        <option value="Marketing Manager">Marketing Manager</option>
+        <option value="Membership Coordinator">Membership Coordinator</option>
+        <option value="Research and Development Head">Research and Development Head</option>
+        <option value="Project Manager">Project Manager</option>
+        <option value="Technical Head">Technical Head</option>
+        <option value="Entrepreneur Head">Entrepreneur Head</option>
+      </select>
+      
+      <button type="submit">Submit</button>
+    </form>
+
+    <div id="output" class="questions" style="display:none;">
+      <h2>Random Questions:</h2>
+      <p id="question1"></p>
+      <p id="question2"></p>
+    </div>
+  </div>
+
+  <script>
+    // Validation function for roll number
+    function validateRollNumber(roll) {
+      // Trim spaces
+      roll = roll.trim();
+      // Check start: should start with "22" or "23"
+      if (!(roll.startsWith("22") || roll.startsWith("23"))) {
+        return "Roll number must start with '22' or '23'.";
+      }
+      // Check if roll number is long enough for 7th-9th digit extraction (needs at least 9 characters)
+      if (roll.length < 9) {
+        return "Roll number is too short.";
+      }
+      // Extract characters 7th to 9th (0-indexed: positions 6 to 8)
+      var substring = roll.substring(6, 9);
+      var allowedValues = ["165", "153", "010", "130"];
+      if (!allowedValues.includes(substring)) {
+        return "Roll number Invalid!";
+      }
+      return ""; // No error
+    }
+
+    document.getElementById('questionForm').addEventListener('submit', function(event) {
+      event.preventDefault();
+
+      // Clear previous error
+      document.getElementById('rollError').style.display = 'none';
+      document.getElementById('rollError').textContent = '';
+
+      // Get values from inputs
+      const name = document.getElementById('name').value.trim();
+      const roll = document.getElementById('roll').value.trim();
+      const role = document.getElementById('roleSelect').value;
+
+      // Validate roll number
+      const rollValidationError = validateRollNumber(roll);
+      if (rollValidationError) {
+        document.getElementById('rollError').style.display = 'block';
+        document.getElementById('rollError').textContent = rollValidationError;
+        return;
+      }
+
+      if (!role) {
+        alert('Please select a role.');
+        return;
+      }
+
+      // Replace with your actual Google Apps Script Web App URL below:
+      const scriptUrl = 'https://script.google.com/macros/s/AKfycbzf7jvfJBdDsxo9b5ZsAXawz4ic4Pqfc0zwvnBCzSps2BSk7OyNYwECOVPwcu1WOU6R/exec';
+      const url = scriptUrl + '?role=' + encodeURIComponent(role);
+
+      // Show loading state
+      document.getElementById('output').style.display = 'block';
+      document.getElementById('question1').textContent = 'Loading...';
+      document.getElementById('question2').textContent = '';
+
+      // Fetch random questions from Google Apps Script web app
+      fetch(url)
+        .then(response => response.json())
+        .then(data => {
+          if (data.error) {
+            document.getElementById('question1').textContent = 'Error: ' + data.error;
+            document.getElementById('question2').textContent = '';
+          } else {
+            document.getElementById('question1').textContent = 'Q1: ' + data.question1;
+            document.getElementById('question2').textContent = 'Q2: ' + data.question2;
+          }
+        })
+        .catch(error => {
+          document.getElementById('question1').textContent = 'Error fetching questions.';
+          document.getElementById('question2').textContent = '';
+          console.error('Error:', error);
+        });
+    });
+  </script>
+</body>
+</html>
